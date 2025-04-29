@@ -45,7 +45,8 @@ contains
 
    end subroutine clean_training_data
 
-   subroutine load(X_in, Y_in, vp_index_in, vp_left_in, vp_right_in, vp_threshold_in, verbose_in, n1, nneigh1_in, nm1, nsigmas_in, &
+   subroutine load(X_in, Y_in, vp_index_in, vp_left_in, vp_right_in, vp_threshold_in, &
+   & verbose_in, normalise_in, n1, nneigh1_in, nm1, nsigmas_in, &
    & t_width_in, d_width_in, cut_start_in, cut_distance_in, order_in, pd_in, &
    & distance_scale_in, angular_scale_in, alchemy_in, two_body_power_in, three_body_power_in, &
    & kernel_idx_in, parameters_in, root_id)
@@ -58,6 +59,9 @@ contains
 
       ! Whether to be verbose with output
       logical, intent(in) :: verbose_in
+
+      ! Whether to normalise the kernel for the distance calculation
+      logical, intent(in) :: normalise_in
 
       ! List of numbers of atoms in each molecule
       integer, dimension(:), intent(in) :: n1 ! save
@@ -127,14 +131,14 @@ contains
       vp_threshold = vp_threshold_in
 
       ! initialise kernel
-      call init_train(X_train, verbose_in, n1, nneigh1_in, nm1, nsigmas_in, t_width_in, &
+      call init_train(X_train, verbose_in, normalise_in, n1, nneigh1_in, nm1, nsigmas_in, t_width_in, &
       & d_width_in, cut_start_in, cut_distance_in, order_in, pd_in, distance_scale_in, &
       & angular_scale_in, alchemy_in, two_body_power_in, three_body_power_in, kernel_idx_in, &
       & parameters_in)
 
    end subroutine load
 
-   subroutine train(X_in, Y_in, verbose_in, n1, nneigh1_in, nm1, nsigmas_in, &
+   subroutine train(X_in, Y_in, verbose_in, normalise_in, n1, nneigh1_in, nm1, nsigmas_in, &
    & t_width_in, d_width_in, cut_start_in, cut_distance_in, order_in, pd_in, &
    & distance_scale_in, angular_scale_in, alchemy_in, two_body_power_in, three_body_power_in, &
    & kernel_idx_in, parameters_in, root_id)
@@ -142,6 +146,9 @@ contains
       double precision, intent(in) :: X_in(:,:, :, :), Y_in(:)
       ! Whether to be verbose with output
       logical, intent(in) :: verbose_in
+
+      ! Whether to normalise the kernel for the distance calculation
+      logical, intent(in) :: normalise_in
 
       ! List of numbers of atoms in each molecule
       integer, dimension(:), intent(in) :: n1 ! save
@@ -206,7 +213,7 @@ contains
       call init_tree(n_train)
 
       ! initialise kernel
-      call init_train(X_train, verbose_in, n1, nneigh1_in, nm1, nsigmas_in, t_width_in, &
+      call init_train(X_train, verbose_in, normalise_in, n1, nneigh1_in, nm1, nsigmas_in, t_width_in, &
       & d_width_in, cut_start_in, cut_distance_in, order_in, pd_in, distance_scale_in, &
       & angular_scale_in, alchemy_in, two_body_power_in, three_body_power_in, kernel_idx_in, &
       & parameters_in)

@@ -44,6 +44,7 @@ module kernel_distance
    double precision, dimension(:, :), allocatable :: parameters ! save
 
    logical :: verbose
+   logical :: normalise
    public :: init_train, init_test
    public :: train_kernel_element, test_kernel_element, test_train_kernel_element, test_distance, train_distance
    private :: X_tr, X_te
@@ -60,7 +61,7 @@ contains
       if (allocated(parameters)) deallocate(parameters)
    end subroutine clean_train
 
-   subroutine init_train(x_in1, verbose_in, n1, nneigh1_in, nm1, nsigmas_in, &
+   subroutine init_train(x_in1, verbose_in, normalise_in, n1, nneigh1_in, nm1, nsigmas_in, &
    & t_width_in, d_width_in, cut_start_in, cut_distance_in, order_in, pd_in, &
    & distance_scale_in, angular_scale_in, alchemy_in, two_body_power_in, three_body_power_in, &
    & kernel_idx_in, parameters_in)
@@ -69,6 +70,9 @@ contains
 
       ! Whether to be verbose with output
       logical, intent(in) :: verbose_in
+
+      ! Whether to normalise the kernel for the distance calculation
+      logical, intent(in) :: normalise_in
 
       ! List of numbers of atoms in each molecule
       integer, dimension(:), intent(in) :: n1 ! save
@@ -167,6 +171,7 @@ contains
       parameters = parameters_in
 
       verbose = verbose_in
+      normalise = normalise_in
    end subroutine init_train
 
    subroutine clean_test()
@@ -432,8 +437,14 @@ contains
    function test_distance(i, j) result(d)
       integer, intent(in) :: i, j
       double precision :: d, d_squared
+      double precision :: kernel_normalised
 
-      d_squared = test_kernel_element(i, i) + train_kernel_element(j, j) - 2 * test_train_kernel_element(i, j)
+      if (normalise) then
+         d_squared = test_kernel_element(i, i) + train_kernel_element(j, j) - 2 * test_train_kernel_element(i, j)
+      else
+         kernel_normalised = test_train_kernel_element(i, j) / sqrt(test_kernel_element(i, i) * train_kernel_element(j, j))
+         d_squared = 2 * (1 - kernel_normalised)
+      end if
       d_squared = max(d_squared, 0.0d0)
       d = sqrt(d_squared)
 
