@@ -219,6 +219,8 @@ def calculate_representation(Qrepresentation, strs, **repr_kwargs):
         return _generate_mbtr(strs, **repr_kwargs)
     elif Qrepresentation == "fchl-kernel":
         return _generate_fchl18(strs, **repr_kwargs)
+    elif Qrepresentation == "fchl-kernel-norm":
+        return _generate_fchl18(strs, **repr_kwargs)
     else:
         raise NotImplementedError(
             f"Representation 'f{Qrepresentation}' not supported with the k-NN model!"
@@ -658,7 +660,7 @@ def training(
         print(f"JKML(Q-kNN): Saving training data to {varsoutfile}")
         if no_metric:
             pickle.dump([X_train, Y_train, X_atoms, knn_params, train_metadata], f)
-        elif Qrepresentation == "fchl-kernel":
+        elif "fchl-kernel" in Qrepresentation:
             vp_params = knn.get_tree_params()
             pickle.dump(
                 [
@@ -724,7 +726,7 @@ def evaluate(Qrepresentation, X_train, strs, knn_model, hyper_cache=None):
     X_test = calculate_representation(
         Qrepresentation, strs, **hyperparams["representation"]
     )
-    if Qrepresentation == "fchl-kernel":
+    if "fchl-kernel" in Qrepresentation:
         X_test, X_train = correct_fchl18_kernel_size(X_test, X_train)
     print("JKML(k-NN): Calculate test kernel(s).", flush=True)
     repr_test_wall = time.perf_counter() - repr_wall_start
@@ -857,7 +859,7 @@ def hyperopt(
         # could preallocate, but won't bother >:)
         distance_matrices = []
         sorted_Ys = []
-        if Qrepresentation == "fchl-kernel":
+        if "fchl-kernel" in Qrepresentation:
             knns = []
         if not no_metric:
             mlkrs = []
@@ -873,6 +875,11 @@ def hyperopt(
                 knn.fit(X_fold, Y_fold)
                 D, neighbors = knn.kneighbours(X_test, n_neighbors=max_k)
                 Y_fold = Y_fold[neighbors]
+            elif Qrepresentation == "fchl-kernel-norm":
+                knn = VPTreeKNN(kernel_args={"sigma": [1.0]}, normalise_distance=True)
+                knn.fit(X_fold, Y_fold)
+                D, neighbors = knn.kneighbours(X_test, n_neighbors=max_k)
+                Y_fold = Y_fold[neighbors]
             else:
                 mlkr = MLKR(n_components=50)
                 mlkr.fit(X_fold, Y_fold)
@@ -885,7 +892,7 @@ def hyperopt(
             D = np.take_along_axis(D, sorted_indices, axis=1)
             distance_matrices.append(D)
             # also store sorted y_train for prediction
-            if Qrepresentation == "fchl-kernel":
+            if "fchl-kernel" in Qrepresentation:
                 # Y_fold is already made into a matrix; hence need to take along axis
                 Y_sorted = np.take_along_axis(Y_fold, indices=sorted_indices, axis=1)
             else:
