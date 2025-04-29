@@ -255,6 +255,7 @@ class VPTreeKNN:
         alchemy_period_width: float = 1.6,
         alchemy_group_width: float = 1.6,
         verbose: bool = False,
+        normalise_distance: bool = False,
         two_body_scaling: float = np.sqrt(8),
         three_body_scaling: float = 1.6,
         two_body_width: float = 0.2,
@@ -306,6 +307,7 @@ class VPTreeKNN:
         self.alchemy_period_width = alchemy_period_width
         self.alchemy_group_width = alchemy_group_width
         self.verbose = verbose
+        self.normalise_distance = normalise_distance
         self.two_body_scaling = two_body_scaling
         self.three_body_scaling = three_body_scaling
         self.two_body_width = two_body_width
@@ -371,6 +373,7 @@ class VPTreeKNN:
             X,
             Y,
             self.verbose,
+            self.normalise_distance,
             N1,
             neighbors1,
             nm1,
@@ -475,6 +478,7 @@ class VPTreeKNN:
         out = dict()
         out["n_neighbors"] = self.k
         out["weights"] = self.weights
+        out["normalise_distance"] = self.normalise_distance
         return out
 
     def get_tree_params(self):
@@ -518,6 +522,7 @@ def load_vp_knn(X_train, Y_train, vp_params, **knn_params):
         vp_params["right"],
         vp_params["threshold"],
         knn.verbose,
+        knn.normalise_distance,
         N1,
         neighbors1,
         nm1,
@@ -606,7 +611,7 @@ def training(
         print(f"Saved pretrain vars to {str(f)}.", flush=True)
     train_wall_start = time.perf_counter()
     train_cpu_start = time.process_time()
-    if not no_metric and Qrepresentation != "fchl-kernel":
+    if not no_metric and "fchl-kernel" not in Qrepresentation:
         print("JKML(Q-kNN): Training MLKR metric.", flush=True)
         # Limit the number of MLKR components for faster training
         mlkr = MLKR(n_components=50)
@@ -623,6 +628,12 @@ def training(
 
         print("JKML(Q-kNN): Learn VP-tree of kernel distances.")
         knn = VPTreeKNN(kernel_args={"sigma": [1.0]}, **hyperparams["knn"])
+    elif Qrepresentation == "fchl-kernel-norm":
+
+        print("JKML(Q-kNN): Learn VP-tree of normalised kernel distances.")
+        knn = VPTreeKNN(
+            kernel_args={"sigma": [1.0]}, normalise_distance=True, **hyperparams["knn"]
+        )
     else:
         # "vanilla" k-NN
         knn = KNeighborsRegressor(n_jobs=-1, algorithm="auto", **hyperparams["knn"])
