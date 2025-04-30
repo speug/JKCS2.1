@@ -608,9 +608,9 @@ def training(
         flush=True,
     )
     # save train input files for off-site debugging
-    with open(varsoutfile, "wb") as f:
-        pickle.dump([X_train, Y_train], f)
-        print(f"Saved pretrain vars to {str(f)}.", flush=True)
+#     with open(varsoutfile, "wb") as f:
+#         pickle.dump([X_train, Y_train], f)
+#         print(f"Saved pretrain vars to {str(f)}.", flush=True)
     train_wall_start = time.perf_counter()
     train_cpu_start = time.process_time()
     if not no_metric and "fchl-kernel" not in Qrepresentation:
