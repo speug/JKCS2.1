@@ -229,6 +229,10 @@ def calculate_representation(Qrepresentation, strs, **repr_kwargs):
 
 def correct_fchl18_kernel_size(X_test: np.ndarray, X_train: np.ndarray):
     if X_train.shape[1] != X_test.shape[1]:
+        print(
+            f"Fixing discrepancy between X_train ({X_train.shape}) and X_test ({X_test.shape}) shapes.",
+            flush=True,
+        )
         if X_train.shape[1] > X_test.shape[1]:
             small = X_test
             large = X_train
@@ -244,6 +248,10 @@ def correct_fchl18_kernel_size(X_test: np.ndarray, X_train: np.ndarray):
             X_test = newmatrix
         else:
             X_train = newmatrix
+        print(
+            f"Done: {X_train.shape} (X_train) == {X_test.shape} (X_test)",
+            flush=True,
+        )
     return X_test, X_train
 
 
