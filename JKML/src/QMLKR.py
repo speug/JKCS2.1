@@ -1,4 +1,4 @@
-from QKNN import calculate_representation
+from .QKNN import calculate_representation
 import pandas as pd
 import numpy as np
 from typing import Union
@@ -30,7 +30,7 @@ class MLKRegressor:
         self.n_train = None
 
     def gaussian_kernel(self, X_test):
-        D = pairwise_distances(X_test, self.X_train, metric=self.mlkr.get_metric())
+        D = pairwise_distances(X_test, self.X_train, metric=self.mlkr.get_metric(), n_jobs=-1)
         return np.exp(-D)
 
     def fit(self, X_train, Y_train):
