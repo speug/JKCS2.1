@@ -273,6 +273,9 @@ def print_results(
             clustersout_df.loc[clustersout_df.iloc[i].name, ("extra", "Y_true")] = (
                 multiplier * Y_validation[i]
             )
+            clustersout_df.loc[clustersout_df.iloc[i].name, ("extra", "Y_hat")] = (
+                multiplier * Y_predicted[0][i]
+            )
         if Qforces == 1:
             if ("extra", "forces") not in clustersout_df.columns:
                 # clustersout_df.loc[clustersout_df.iloc[i].name,("extra","forces")] = [array(force) for force in F_predicted[0][i]]
