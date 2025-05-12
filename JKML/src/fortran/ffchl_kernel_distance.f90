@@ -440,10 +440,10 @@ contains
       double precision :: kernel_normalised
 
       if (normalise) then
-         d_squared = test_kernel_element(i, i) + train_kernel_element(j, j) - 2 * test_train_kernel_element(i, j)
-      else
          kernel_normalised = test_train_kernel_element(i, j) / sqrt(test_kernel_element(i, i) * train_kernel_element(j, j))
          d_squared = 2 * (1 - kernel_normalised)
+      else
+         d_squared = test_kernel_element(i, i) + train_kernel_element(j, j) - 2 * test_train_kernel_element(i, j)
       end if
       d_squared = max(d_squared, 0.0d0)
       d = sqrt(d_squared)
